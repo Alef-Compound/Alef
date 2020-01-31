@@ -9,7 +9,7 @@ Participants:
 • Students //Not needed to be included in the smart contract
 
 Dynamics:
-• Gifted students are chosen by academies. //Off-chain
+• Students are chosen by academies. //Off-chain
 • Academies present their offers to the sponsors.
 • An offer contains: The academy’s name, the gifted online course, and the amount of capital to be locked (The principal).
 • The principal is calculated using this formula:
