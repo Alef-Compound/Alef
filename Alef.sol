@@ -67,17 +67,21 @@ contract Alef {
   }
 
 // Function which will accept desposits.
-  function deposit() payable public {
+   function deposit() isSponsor payable public {
 
   require (msg.value != 0) ;
+  
     int8 i;
     // Update account balances for all sponsors.
     for (i=0;i<sponsorsIndexSize;i++) {
        if (sponsors[sponsorIndex[i]].status == true) {
          
-         sponsors[sponsorIndex[i]].balance = msg.value;
+         sponsors[sponsorIndex[i]].balance += msg.value;
        }
     }
+
+    emit NewDeposit(msg.sender, msg.value);
+  }
 
     emit NewDeposit(msg.sender, msg.value);
   }
