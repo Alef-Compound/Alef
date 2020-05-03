@@ -78,14 +78,10 @@ contract Alef {
          
          sponsors[sponsorIndex[i]].balance += msg.value;
        }
-    }
-
+}
     emit NewDeposit(msg.sender, msg.value);
   }
 
-    emit NewDeposit(msg.sender, msg.value);
-  }
-  
   function getBalance(address _address) isSponsor  public view returns (uint) {
   
     return sponsors[_address].balance;
