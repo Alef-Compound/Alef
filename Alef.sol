@@ -4,7 +4,7 @@ contract Alef {
     
      address public owner;
      
-     struct Sponsor {
+  struct Sponsor {
     // If the sponser can administer their account.
     bool status;
     // A record of the amount held for the sponsor.
@@ -89,6 +89,103 @@ contract Alef {
   
     function getStatus(address _address) public view returns(bool)  {
     return sponsors[_address].status;
+  }
+
+   struct Academy {
+    // If the academy can administer their account.
+    bool status;
+    // A record of the amount held for the academy.
+    uint balance;
+     }
+     
+     
+  
+  // A mapping with account address as key and academy data sturcture as value.
+  mapping(address => Academy) public academies;
+  // A mapping to behave as an index of addreesses
+  mapping (int8 => address) public academyIndex;//  
+  // Keep note of total number of academies in the system so we can iterate over index.
+  int8 public academiesIndexSize;
+  
+
+  event AcademyAction(address indexed academy, bytes32 action);
+ 
+
+
+  
+  // Check if current account calling methods is a valid academy of the contract.
+  modifier isAcademy() {
+   require (academies[msg.sender].status == true);
+    _;
+  }
+  
+  // Add a new academy to the contract.
+  function addAcademy(address _academy) isOwner public returns (bool) {
+
+    academies[_academy].status = true;
+    academyIndex[academiesIndexSize] = _academy;
+    academiesIndexSize++;
+
+    emit AcademyAction(_academy, 'added');
+  }
+  
+  // Disallow an account address from acting on contract.
+  function disableAcademy(address _academy) isOwner public returns (bool) {
+    require (_academy != owner) ; // Don't lock out the main account
+    academies[_academy].status = false;
+    emit AcademyAction(_academy, 'disabled');
+  }
+
+  // Allow an account address from acting on contract.
+  function enableAcademy(address _address) isOwner public returns (bool) {
+    academies[_address].status = true;
+    emit AcademyAction(_address, 'enabled');
+  }
+
+
+  
+  //Get the balance of an academy
+  function getBalance(address _address) isAcademy public view returns (uint) {
+  
+    return academies[_address].balance;
+  }  
+  
+  //Get the status of an academy
+    function getStatus(address _address) public view returns(bool)  {
+    return academies[_address].status;
+  }
+  
+
+ struct Course {
+     address academy;
+    uint price;
+    uint courseID;
+ }
+   mapping (address => mapping(uint => uint)) public courseIndex;
+   
+  Course[] public courses;
+
+ 
+   function addCourse(uint _courseID, uint _price) isAcademy public {
+       
+  uint idx = courseIndex[msg.sender][_courseID];
+           idx = courses.length;
+
+   courseIndex[msg.sender][_courseID]= idx;
+
+    
+    courses.push(Course({
+      academy: msg.sender,
+      courseID: _courseID,
+      price: _price
+      }));
+   }
+   
+   function getCourseByAcademyAndID( address academy, uint _courseID) external view returns(uint price) {
+    uint idx = courseIndex[academy][_courseID];
+    require(courses.length > idx);
+    require(courses[idx].courseID == _courseID);
+    return (courses[idx].price);
   }
 
 
