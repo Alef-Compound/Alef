@@ -20,7 +20,11 @@ contract Alef {
    // Declare events for actions we may want to watch
   event SponsorAction(address indexed sponsor, bytes32 action);
   event NewDeposit(address indexed sponsor, uint amt);
+  event SponsorWithdrawal(address indexed sponsor, uint amt);
   event OwnerChanged(address indexed owner, address indexed newOwner);
+  event AcademyWithdrawal(address indexed academy, uint amt);
+  event CourseCreated(address indexed academy, uint indexed course, uint indexed price);
+  event CourseRemoved(address indexed academy, uint indexed course, bytes32 action);
 
 
   
@@ -33,13 +37,13 @@ contract Alef {
   // Check if current account calling methods is the owner.
   modifier isOwner() {
     
-      require (msg.sender == owner);
+     require (msg.sender == owner);
     _;
   }
   
   // Check if current account calling methods is a valid sponsor of the contract.
   modifier isSponsor() {
-   require (sponsors[msg.sender].status == true);
+    require (sponsors[msg.sender].status == true);
     _;
   }
   
@@ -82,12 +86,20 @@ contract Alef {
     emit NewDeposit(msg.sender, msg.value);
   }
 
-  function getBalance(address _address) isSponsor  public view returns (uint) {
+  //Withdraw from the sponsor's balance
+    function sponsorWithdrawal(uint amount) payable isSponsor public {
+    require (sponsors[msg.sender].status == true || amount > sponsors[msg.sender].balance);
+    require (msg.sender.send(amount));
+    emit SponsorWithdrawal(msg.sender, amount);
+
+        sponsors[msg.sender].balance -= amount;
+  }
+  function getSponsorBalance(address _address) isSponsor  public view returns (uint) {
   
     return sponsors[_address].balance;
   }  
   
-    function getStatus(address _address) public view returns(bool)  {
+    function getSponsorStatus(address _address) public view returns(bool)  {
     return sponsors[_address].status;
   }
 
@@ -115,7 +127,7 @@ contract Alef {
   
   // Check if current account calling methods is a valid academy of the contract.
   modifier isAcademy() {
-   require (academies[msg.sender].status == true);
+    require (academies[msg.sender].status == true);
     _;
   }
   
@@ -157,19 +169,27 @@ contract Alef {
   
 
  struct Course {
-     address academy;
+     //Academy's public key
+    address academy;
+    //Price of the course
     uint price;
+    //The course's ID
     uint courseID;
  }
-   mapping (address => mapping(uint => uint)) public courseIndex;
-   
+ 
+  // courses (Academies offering online courses)
   Course[] public courses;
 
+   //Map (address, ID) to index into courses
+   mapping (address => mapping(uint => uint)) public courseIndex;
+   
  
+
+ //Lets an academy add a new course
    function addCourse(uint _courseID, uint _price) isAcademy public {
        
-  uint idx = courseIndex[msg.sender][_courseID];
-           idx = courses.length;
+   uint idx = courseIndex[msg.sender][_courseID];
+   idx = courses.length;
 
    courseIndex[msg.sender][_courseID]= idx;
 
@@ -179,21 +199,48 @@ contract Alef {
       courseID: _courseID,
       price: _price
       }));
+          emit CourseCreated(courses[idx].academy, courses[idx].courseID, courses[idx].price);
+
    }
    
-   function getCourseByAcademyAndID( address academy, uint _courseID) external view returns(uint price) {
-    uint idx = courseIndex[academy][_courseID];
-    require(courses.length > idx);
-    require(courses[idx].courseID == _courseID);
-    return (courses[idx].price);
+   //Gets the price of a listed course by the ID of the couse and its academy's address
+  function getCourseByAcademyAndID( address academy, uint _courseID) external view returns(uint price) {
+         uint idx = courseIndex[academy][_courseID];
+         require(courses.length > idx);
+         require(courses[idx].courseID == _courseID);
+         return (courses[idx].price);
   }
+  
+  //Removes a course listed by an academy
+  function removeCourseByID(uint _courseID) isAcademy public {
+       
+          uint idx = courseIndex[msg.sender][_courseID];
+       for (uint i = idx; i<courses.length-1; i++){
+            courses[i] = courses[i+1];
+        }
+        delete courses[courses.length-1];
+        courses.pop();
+        emit CourseRemoved(courses[idx].academy, courses[idx].courseID, 'Removed');
 
+
+       
+    }
+    
+    //Withdraw from the academy's balance
+  function academywithdrawal(uint amount) payable isSponsor public {
+      
+        require (sponsors[msg.sender].status == true || amount > sponsors[msg.sender].balance);
+        require (msg.sender.send(amount));
+        emit AcademyWithdrawal(msg.sender, amount);
+        sponsors[msg.sender].balance -= amount;
+  }
+  
 
   // Change ownership of the contract.
-  function transferOwner(address payable newOwner)  isOwner public returns (bool)  { //view and event cannot be together
-    require (!sponsors[newOwner].status != true);
-    emit OwnerChanged(owner, newOwner);
-    owner = newOwner;
+  function transferOwner(address payable newOwner)  isOwner public returns (bool)  {
+         require (!sponsors[newOwner].status != true);
+         emit OwnerChanged(owner, newOwner);
+         owner = newOwner;
   }
   
 }
