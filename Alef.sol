@@ -25,6 +25,8 @@ contract Alef {
   event AcademyWithdrawal(address indexed academy, uint amt);
   event CourseCreated(address indexed academy, uint indexed course, uint indexed price);
   event CourseRemoved(address indexed academy, uint indexed course, bytes32 action);
+  event ScholarshipCreated(uint indexed studentID, address indexed academy, uint indexed course);
+
 
 
   
@@ -246,6 +248,45 @@ contract Alef {
         emit AcademyWithdrawal(msg.sender, amount);
         sponsors[msg.sender].balance -= amount;
   }
+  
+  struct Scholarship {
+     uint studentID;
+    address academy;
+    uint courseID;
+    //The duration of the scholarship
+    uint duration;
+}
+
+ // Scholarships array (Owner offering scholarships)
+  Scholarship[] public scholarships;
+
+   //Map studentID to index into scholarships
+  mapping(uint => uint) public scholarshipIndex;
+  
+   function addScholarship(uint _studentID, uint _courseID, address _academy, uint _duration) isOwner public {
+  
+    uint idx = courseIndex[_academy][_courseID];
+      scholarshipIndex[_studentID] = scholarships.length;
+      
+      //Check if the scholarship exists
+if ((courses.length > idx) && (courses[idx].academy == _academy) && (courses[idx].courseID == _courseID)) {
+   
+
+    
+    scholarships.push(Scholarship({
+      studentID: _studentID,
+      academy: _academy,
+      courseID: _courseID,
+      duration: _duration
+      }));
+          emit ScholarshipCreated(scholarships[idx].studentID, scholarships[idx].academy, scholarships[idx].courseID);
+
+   }
+  else {
+      // the scholarship does not exist
+      revert();
+    }
+   }
   
 
   // Change ownership of the contract.
