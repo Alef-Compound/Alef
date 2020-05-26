@@ -203,6 +203,18 @@ contract Alef {
 
    }
    
+      //Change the ID of a course
+   function changeCourseID(address academy ,uint _courseID, uint _newID) isAcademy public {
+     uint idx = courseIndex[academy][_courseID];
+     courses[idx].courseID = _newID;
+   }
+   
+    //Change the ID of a course
+    function changeCoursePrice(address academy ,uint _courseID, uint _newPrice) isAcademy public {
+     uint idx = courseIndex[academy][_courseID];
+     courses[idx].price = _newPrice;
+   }
+   
    //Gets the price of a listed course by the ID of the couse and its academy's address
   function getCourseByAcademyAndID( address academy, uint _courseID) external view returns(uint price) {
          uint idx = courseIndex[academy][_courseID];
