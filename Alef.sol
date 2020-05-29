@@ -1,299 +1,143 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.6.0;
 
-contract Alef {
-    
-     address public owner;
-     
-  struct Sponsor {
-    // If the sponser can administer their account.
-    bool status;
-    // A record of the amount held for the sponsor.
-    uint balance;
-  }
-  // A mapping with account address as key and sponser data sturcture as value.
-  mapping(address => Sponsor) public sponsors;
-  // A mapping to behave as an index of addreesses
-  mapping (int8 => address) public sponsorIndex;//  
-  // Keep note of total number of participants in the system so we can iterate over index.
-  int8 public sponsorsIndexSize;
-  
-   // Declare events for actions we may want to watch
-  event SponsorAction(address indexed sponsor, bytes32 action);
-  event NewDeposit(address indexed sponsor, uint amt);
-  event SponsorWithdrawal(address indexed sponsor, uint amt);
-  event OwnerChanged(address indexed owner, address indexed newOwner);
-  event AcademyWithdrawal(address indexed academy, uint amt);
-  event CourseCreated(address indexed academy, uint indexed course, uint indexed price);
-  event CourseRemoved(address indexed academy, uint indexed course, bytes32 action);
-  event ScholarshipCreated(uint indexed studentID, address indexed academy, uint indexed course);
+import "./Storage.sol";
+import "../Safe/SafeMath.sol";
 
 
+contract Alef is Storage {
 
-  
-  // Constructor
-    constructor() public {
-    // Set the address of the contract deployer to be owner.
-    owner = msg.sender;
+
+  using SafeMath for uint256;
+
+
+  constructor (address _daiContractAddress, address _cDaiContractAddress, address _cEthContractAddress) public {
+    // must set the 3 erc addresses
+    daiContractAddress = _daiContractAddress;
+    cDaiContractAddress = _cDaiContractAddress;
+    cEthContractAddress = _cEthContractAddress;
   }
-  
-  // Check if current account calling methods is the owner.
-  modifier isOwner() {
-    
-     require (msg.sender == owner);
-    _;
-  }
-  
-  // Check if current account calling methods is a valid sponsor of the contract.
-  modifier isSponsor() {
-    require (sponsors[msg.sender].status == true);
-    _;
-  }
-  
-  // Add a new sponsor to the contract.
-  function addSponsor(address _sponsor) isOwner public returns (bool) {
+
+
+  function addSponsor(address _sponsor) public onlyOwner {
+
+    // add a new sponsor
+
+    require (sponsors[_sponsor].status != true, "already a sponsor");
 
     sponsors[_sponsor].status = true;
-    sponsorIndex[sponsorsIndexSize] = _sponsor;
-    sponsorsIndexSize++;
 
     emit SponsorAction(_sponsor, 'added');
   }
-  
-  // Disallow an account address from acting on contract.
-  function disableSponsor(address _sponsor) isOwner public returns (bool) {
-    require (_sponsor != owner) ; // Don't lock out the main account
-    sponsors[_sponsor].status = false;
-    emit SponsorAction(_sponsor, 'disabled');
-  }
 
-  // Allow an account address from acting on contract.
-  function enableSponsor(address _address) isOwner public returns (bool) {
+
+
+  function enableSponsor(address _address) public onlyOwner {
+
+    // enable a sponsor
+    //@-> require: _sponsor status == not active
+    //@-> emits: address enabled and action as string
+
+    require (sponsors[_address].status == false,"already enabled");
+
     sponsors[_address].status = true;
-    emit SponsorAction(_address, 'enabled');
+
+    emit SponsorAction(_address, "enabled");
+
   }
 
-// Function which will accept desposits.
-   function deposit() isSponsor payable public {
 
-  require (msg.value != 0) ;
-  
-    int8 i;
-    // Update account balances for all sponsors.
-    for (i=0;i<sponsorsIndexSize;i++) {
-       if (sponsors[sponsorIndex[i]].status == true) {
-         
-         sponsors[sponsorIndex[i]].balance += msg.value;
-       }
-}
+  function disableSponsor(address _address) public onlyOwner {
+
+    // disable sponsor
+    //@-> require: _sponsor != owner and _sponsor status == active
+    //@-> emits: address disabled and action as string
+    //@-> notice: _sponsor is not cancelled. Sponsor balance remains saved
+
+    require (_address != owner && sponsors[_address].status == true,"already disabled") ;
+
+    sponsors[_address].status = false;
+
+    emit SponsorAction(_address, 'disabled');
+  }
+
+
+
+  function sponsorEthDeposit() public payable whenNotPaused {
+
+    // increase sponsor balance
+
+    require (msg.value > 0,"cannot deposit 0");
+
+    sponsors[msg.sender].balance = sponsors[msg.sender].balance.add(msg.value);
+
     emit NewDeposit(msg.sender, msg.value);
   }
 
+
+  function fundSponsor (address _sponsor) public payable whenNotPaused {
+
+    // anyone can fund a sponsor
+
+    require (sponsors[_sponsor].status == true,"sponsor does not exist");
+
+    sponsors[_sponsor].balance = sponsors[_sponsor].balance.add(msg.value);
+
+    emit NewDeposit(_sponsor, msg.value); //emits the sponsor that has been funded and the amount
+
+  }
+
+
   //Withdraw from the sponsor's balance
-    function sponsorWithdrawal(uint amount) payable isSponsor public {
-    require (sponsors[msg.sender].status == true || amount > sponsors[msg.sender].balance);
-    require (msg.sender.send(amount));
-    emit SponsorWithdrawal(msg.sender, amount);
+  function sponsorWithdrawal(uint256 _amount) public payable isSponsor {
 
-        sponsors[msg.sender].balance -= amount;
-  }
-  function getSponsorBalance(address _address) isSponsor  public view returns (uint) {
-  
-    return sponsors[_address].balance;
-  }  
-  
-    function getSponsorStatus(address _address) public view returns(bool)  {
-    return sponsors[_address].status;
-  }
+    require (sponsors[msg.sender].balance >= _amount, "insufficent balance");
 
-   struct Academy {
-    // If the academy can administer their account.
-    bool status;
-    // A record of the amount held for the academy.
-    uint balance;
-     }
-     
-     
-  
-  // A mapping with account address as key and academy data sturcture as value.
-  mapping(address => Academy) public academies;
-  // A mapping to behave as an index of addreesses
-  mapping (int8 => address) public academyIndex;//  
-  // Keep note of total number of academies in the system so we can iterate over index.
-  int8 public academiesIndexSize;
-  
+    sponsors[msg.sender].balance = sponsors[msg.sender].balance.sub(_amount);
 
-  event AcademyAction(address indexed academy, bytes32 action);
- 
+    msg.sender.tranfer(_amount);
 
+    emit SponsorWithdrawal(msg.sender, _amount);
 
-  
-  // Check if current account calling methods is a valid academy of the contract.
-  modifier isAcademy() {
-    require (academies[msg.sender].status == true);
-    _;
-  }
-  
-  // Add a new academy to the contract.
-  function addAcademy(address _academy) isOwner public returns (bool) {
-
-    academies[_academy].status = true;
-    academyIndex[academiesIndexSize] = _academy;
-    academiesIndexSize++;
-
-    emit AcademyAction(_academy, 'added');
-  }
-  
-  // Disallow an account address from acting on contract.
-  function disableAcademy(address _academy) isOwner public returns (bool) {
-    require (_academy != owner) ; // Don't lock out the main account
-    academies[_academy].status = false;
-    emit AcademyAction(_academy, 'disabled');
-  }
-
-  // Allow an account address from acting on contract.
-  function enableAcademy(address _address) isOwner public returns (bool) {
-    academies[_address].status = true;
-    emit AcademyAction(_address, 'enabled');
   }
 
 
-  
-  //Get the balance of an academy
-  function getBalance(address _address) isAcademy public view returns (uint) {
-  
-    return academies[_address].balance;
-  }  
-  
-  //Get the status of an academy
-    function getStatus(address _address) public view returns(bool)  {
-    return academies[_address].status;
+  //Lets an academy add a new course
+  function addCourse(uint256 _price) public {
+
+    bytes32 id = keccak256(abi.encodePacked(msg.sender,now)); // Creates a unique id hashing msg.sender and block timestamp
+
+    courses[id].courseOwner = msg.sender;
+    courses[id].price = _price;
+    courses[id].courseState = true;
+
+    emit CourseCreated (id); // Emits the course id
+
   }
-  
 
- struct Course {
-     //Academy's public key
-    address academy;
-    //Price of the course
-    uint price;
-    //The course's ID
-    uint courseID;
- }
- 
-  // courses (Academies offering online courses)
-  Course[] public courses;
 
-   //Map (address, ID) to index into courses
-   mapping (address => mapping(uint => uint)) public courseIndex;
-   
- 
+  //Change course id
+  function changeCourseID(address academy ,bytes32 _courseID, bytes32 _newID) public {
 
- //Lets an academy add a new course
-   function addCourse(uint _courseID, uint _price) isAcademy public {
-       
-   uint idx = courseIndex[msg.sender][_courseID];
-   idx = courses.length;
-
-   courseIndex[msg.sender][_courseID]= idx;
-
-    
-    courses.push(Course({
-      academy: msg.sender,
-      courseID: _courseID,
-      price: _price
-      }));
-          emit CourseCreated(courses[idx].academy, courses[idx].courseID, courses[idx].price);
-
-   }
-   
-      //Change the ID of a course
-   function changeCourseID(address academy ,uint _courseID, uint _newID) isAcademy public {
-     uint idx = courseIndex[academy][_courseID];
-     courses[idx].courseID = _newID;
-   }
-   
-    //Change the ID of a course
-    function changeCoursePrice(address academy ,uint _courseID, uint _newPrice) isAcademy public {
-     uint idx = courseIndex[academy][_courseID];
-     courses[idx].price = _newPrice;
-   }
-   
-   //Gets the price of a listed course by the ID of the couse and its academy's address
-  function getCourseByAcademyAndID( address academy, uint _courseID) external view returns(uint price) {
-         uint idx = courseIndex[academy][_courseID];
-         require(courses.length > idx);
-         require(courses[idx].courseID == _courseID);
-         return (courses[idx].price);
+    require (courses[_courseID]._courseID == true,"is provided does not exist"); // require empty struct
+    courses[_courseID].id = _newID;
   }
-  
-  //Removes a course listed by an academy
-  function removeCourseByID(uint _courseID) isAcademy public {
-       
-          uint idx = courseIndex[msg.sender][_courseID];
-       for (uint i = idx; i<courses.length-1; i++){
-            courses[i] = courses[i+1];
-        }
-        delete courses[courses.length-1];
-        courses.pop();
-        emit CourseRemoved(courses[idx].academy, courses[idx].courseID, 'Removed');
 
 
-       
-    }
-    
-    //Withdraw from the academy's balance
-  function academywithdrawal(uint amount) payable isSponsor public {
-      
-        require (sponsors[msg.sender].status == true || amount > sponsors[msg.sender].balance);
-        require (msg.sender.send(amount));
-        emit AcademyWithdrawal(msg.sender, amount);
-        sponsors[msg.sender].balance -= amount;
+  //Change the ID of a course
+  function changeCoursePrice(uint _courseID, uint _newPrice) public {
+
+    require (courses[_courseID]._courseID == true,"is provided does not exist"); // require empty struct
+    courses[_courseID].price = _newPrice;
+
   }
-  
-  struct Scholarship {
-     uint studentID;
-    address academy;
-    uint courseID;
-    //The duration of the scholarship
-    uint duration;
-}
 
- // Scholarships array (Owner offering scholarships)
-  Scholarship[] public scholarships;
 
-   //Map studentID to index into scholarships
-  mapping(uint => uint) public scholarshipIndex;
-  
-   function addScholarship(uint _studentID, uint _courseID, address _academy, uint _duration) isOwner public {
-  
-    uint idx = courseIndex[_academy][_courseID];
-      scholarshipIndex[_studentID] = scholarships.length;
-      
-      //Check if the scholarship exists
-if ((courses.length > idx) && (courses[idx].academy == _academy) && (courses[idx].courseID == _courseID)) {
-   
+  function removeCourse (bytes32 _courseAddress) public {
 
-    
-    scholarships.push(Scholarship({
-      studentID: _studentID,
-      academy: _academy,
-      courseID: _courseID,
-      duration: _duration
-      }));
-          emit ScholarshipCreated(scholarships[idx].studentID, scholarships[idx].academy, scholarships[idx].courseID);
+    require (courses[_courseAddress].courseOwner == msg.sender || owner == msg.sender,"not the owner"); // only the course owner or the contract owner can remove a course
+    delete (courses[_courseAddress]); //delete struct
 
-   }
-  else {
-      // the scholarship does not exist
-      revert();
-    }
-   }
-  
-
-  // Change ownership of the contract.
-  function transferOwner(address payable newOwner)  isOwner public returns (bool)  {
-         require (!sponsors[newOwner].status != true);
-         emit OwnerChanged(owner, newOwner);
-         owner = newOwner;
   }
-  
+
+
 }
