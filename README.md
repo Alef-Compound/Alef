@@ -32,17 +32,21 @@ When a lender locks tokens such as Dai, Compound mints and transfers cDai tokens
 
                              Principal = Monthly tuition fees / Interest rate                        
 
-However this formula assumes a constant interest rate which means that if it decreases, it will delay the monthly tuition fees by a small period of time and vice versa. The contract will trigger a withdrawal function from Compound whenever the Dai/cDai exchange rate reaches a certain number. As seen in the example above, if 
+However this formula assumes a constant interest rate which means that if it decreases, it will delay the monthly tuition fees by a small period of time and vice versa. The contract will trigger a withdrawal function from Compound whenever the Dai/cDai exchange rate reaches a certain number. As seen in the example above
 
-                             TuitionFees = (cDaiBalance * ExchangeRate) - Principle
-then, 
-                             ExchangeRate = (TuitionFees + Principle) / cDaiBalance
+                            TuitionFees = UnderlyingBalance - Principle 
+       
+ or,                       TuitionFees = (cDaiBalance * ExchangeRate) - Principle 
+                           
+                            ExchangeRate = (TuitionFees + Principle) / cDaiBalance
+
+                             
 
 • Once an offer is accepted by the sponsor, the funds will be transferred from his balance to Compound. //In the future, sponsors could raise funds by joining pools and fulfilling academies’ offers collectively using quadratic funding
 • Interest in Compound is generated in real-time and transferred to an academy’s address once it equates to a one-month tuition fees.
 • Sponsors can also choose to redeem their cDai and withdraw their balance at any time.
 
-## futur implementation
+## future implementation
 Quadratic Funding will be added in the future. QF is a voting mechanism that determines the amount of financial help each student will get. It lets the community that is backing a certain open-source project vote over which student is going to be of benefit to them and ensures that the rewarded students are likely to be hired and contribute in building these projects once they graduate. 
 
 ## Contact us
