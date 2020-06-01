@@ -31,6 +31,10 @@ const HDWalletProvider = require("@truffle/hdwallet-provider");
  const fs = require('fs');
  const mnemonic = fs.readFileSync(".secret").toString().trim();
 
+ // This is a bullshit truffle seed phrase use yours
+
+ const mnemonicDev = "bubble six lamp page clever echo promote leave lunar crisp immense erode"
+
 module.exports = {
 
   /* Truffle pluggin to check contract known vulnerabilities*/
@@ -54,9 +58,9 @@ module.exports = {
     // tab if you use this network and you must also set the `host`, `port` and `network_id`
     // options below to some value.
     //
-    development: {
+    develop: {
       provider: () =>
-        new HDWalletProvider(mnemonicDev, "http://127.0.0.1:7545"),
+        new HDWalletProvider(mnemonicDev, "http://127.0.0.1:9545"),
         network_id: "*" // Any network (default: none)
     },
     geth: {
