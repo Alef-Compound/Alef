@@ -11,7 +11,13 @@ contract Alef is Storage {
 
 
   constructor (address _daiContractAddress, address _cDaiContractAddress, address _cEthContractAddress) public {
-    // must set the 3 erc addresses
+  
+    // verify parameters
+    require(Erc20(_daiContractAddress).approve(address(this), 0),"dai contract did not answer");
+    require(CErc20(_cDaiContractAddress).approve(address(this), 0),"cDai contract did not answer");
+    require(CEth(_cEthContractAddress).approve(address(this), 0),"cEth contract did not answer");
+    
+   
     daiContractAddress = _daiContractAddress;
     cDaiContractAddress = _cDaiContractAddress;
     cEthContractAddress = _cEthContractAddress;
