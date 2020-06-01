@@ -1,0 +1,29 @@
+{
+  "name": "alef",
+  "version": "1.0.0",
+  "description": "Alef is an open-finance application that elects and rewards competent students who wish to learn blockchain and open-source programming with scholarship opportunities",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts-ethereum-package": "^3.0.0",
+    "@truffle/hdwallet-provider": "^1.0.35",
+    "openzeppelin-solidity": "^3.0.1",
+    "truffle-security": "^1.7.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alef-Compound/Alef.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Alef-Compound/Alef/issues"
+  },
+  "homepage": "https://github.com/Alef-Compound/Alef#readme"
+}
