@@ -49,6 +49,8 @@ contract Storage is Ownable, Pausable {
   uint256 public contractCdaiBalance; // Total amount of cDai in contract
 
 
+  bool public initialized;
+
   // require sponsor
   modifier isSponsor() {
     require (sponsors[msg.sender].status == true);

@@ -15,6 +15,7 @@ contract Alef is Storage {
     daiContractAddress = _daiContractAddress;
     cDaiContractAddress = _cDaiContractAddress;
     cEthContractAddress = _cEthContractAddress;
+    initialized = true;
   }
 
 
