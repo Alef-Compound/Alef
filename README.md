@@ -12,6 +12,19 @@ This app will be tested on the Ivan on Tech academy because they offer a wide ra
 * Ecosystems: Companies, foundations, and exchanges providing the bulk of the funds in order to onboard talented developers.
 * Contributors: Crypto communities selecting the best available talent to build the ecosystem.
 
+##Basic Commands
+
+### Smart contract side
+  Compile:              truffle compile
+  Migrate:              truffle migrate
+  Test contracts:       truffle test
+
+### Client side
+  Test dapp:            cd client && npm test
+  Run dev server:       cd client && npm run start
+  Build for production: cd client && npm run build
+
+
 ## Technical spec
 Running under the hood is the Compound protocol which offers its lenders 2-7.5% of annual interest on their deposits. To understand where this interest is coming from it’s important to mention that on the other side of this network there are borrowers who are willing to take out these loans and pay them back with interest at each produced Ethereum block. The interest that borrowers pay produces the interest that lenders earn.
 
