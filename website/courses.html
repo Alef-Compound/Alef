@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Courses</title>
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="description" content="# Alef: A decentralized scholarship funding app.
+
+Alef is a Scholarship Funding Program running on top of the Compound defi protocol.
+
+# Alef: A decentralized scholarship funding app.
+Alef is a Scholarship Funding Program running on top of the Compound defi protocol.
+
+The idea is to provide a platform for sponsors to lock in their capital in Compound and fund the tuition fees of smart and dedicated students with the generated interest which is by the way, how many scholarship programs work in traditional finance except this protocol won’t require any approvals from bureaucrats and financial institutions AND of course, it’s gonna be global!
+
+Participants:
+• Sponsors
+• Academies
+• Students //Not needed to be included in the smart contract
+
+Dynamics:
+• Students are chosen by academies. //Off-chain
+• Academies present their offers to the sponsors.
+• An offer contains: The academy’s name, the gifted online course, and the amount of capital to be locked (The principal).
+• The principal is calculated using this formula:
+
+                             Principal = Monthly tuition fees / Interest rate
+Since Compound’s interest rate changes over time, the principle has to also follow and be updated each month.
+
+• Once an offer is accepted by the sponsor, the funds will be transferred from his address to Compound and a scholarship is officially granted to a student. //In the future, sponsors could raise funds by joining pools and fulfilling academies’ offers collectively.
+• Interest in Compound is generated in real-time and transferred to an academy’s address.
+• To ensure that the student is worthy of the scholarship, she has to take a quiz each month.
+• If she fails a quiz she gets a warning from the academy. After a certain amount of warnings, the academy can choose to close the contract and lockout the sponsor’s money. //Quizzes and warnings can be done off-chain I suppose
+• After passing a certain amount of quizzes and maybe a final exam she will graduate and the sponsor’s funds will be locked out of Compound and transferred back to the sponsor’s address.
+• Sponsors can also choose to close the contract and lockout their funds at the end of each month.
+    
+    
+    
+    ------This project is developed by Ivan on Tech Academy graduates------">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/png" sizes="386x490" href="assets/img/logos/ALEF_logo.png">
+    <link rel="icon" type="image/png" sizes="386x490" href="assets/img/logos/ALEF_logo.png">
+    <link rel="icon" type="image/png" sizes="386x490" href="assets/img/logos/ALEF_logo.png">
+    <link rel="icon" type="image/png" sizes="386x490" href="assets/img/logos/ALEF_logo.png">
+    <link rel="icon" type="image/png" sizes="386x490" href="assets/img/logos/ALEF_logo.png">
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" href="assets/fonts/simple-line-icons.min.css">
+    <link rel="stylesheet" href="assets/css/animated-textbox2.css">
+    <link rel="stylesheet" href="assets/css/card-3-column-animation-shadows-images.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.css">
+    <link rel="stylesheet" href="assets/css/Icon-Input.css">
+    <link rel="stylesheet" href="assets/css/input-file.css">
+    <link rel="stylesheet" href="assets/css/smoothproducts.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-light navbar-expand-md fixed-top bg-white clean-navbar" id="navbar-main" style="padding-bottom: 5px;">
+        <div class="container-fluid"><a class="navbar-brand logo" id="brand_logo" href="index.html" style="font-size: 20px;"><img id="ALEF_logo" style="width: 49px;height: 38,6px;" src="assets/img/logos/ALEF_logo.png" alt="Alef - Decentralized Scholership Platform"></a><button data-toggle="collapse"
+                class="navbar-toggler" data-target="#navcol-1" id="navbar-toggle"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navcol-1">
+                <ul class="nav navbar-nav ml-auto" id="nacbar-links">
+                    <li class="nav-item" role="presentation" id="project-homepage"><a class="nav-link" href="index.html">Project homepage</a></li>
+                    <li class="nav-item" role="presentation" id="home"><a class="nav-link" href="homepage.html">Home</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <nav class="navbar navbar-light navbar-expand-md fixed-top bg-white clean-navbar" id="navbar-main" style="padding-bottom: 5px;">
+        <div class="container-fluid"><a class="navbar-brand logo" id="brand_logo" href="index.html" style="font-size: 20px;"><img id="ALEF_logo" style="width: 49px;height: 38,6px;" src="assets/img/logos/ALEF_logo.png" alt="Alef - Decentralized Scholership Platform"></a><button data-toggle="collapse"
+                class="navbar-toggler" data-target="#navcol-1" id="navbar-toggle"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navcol-1">
+                <ul class="nav navbar-nav ml-auto" id="nacbar-links">
+                    <li class="nav-item" role="presentation" id="project-homepage"><a class="nav-link" href="index.html">Project homepage</a></li>
+                    <li class="nav-item" role="presentation" id="home"><a class="nav-link" href="homepage.html">Home</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main class="page blog-post-list">
+        <section class="clean-block clean-blog-list dark">
+            <div class="container">
+                <div class="block-heading">
+                    <h2 class="text-info">Courses Layout 1</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quam urna, dignissim nec auctor in, mattis vitae leo.</p>
+                </div>
+                <div class="block-content">
+                    <div class="clean-blog-post">
+                        <div class="row">
+                            <div class="col-lg-5"><img class="rounded img-fluid" src="assets/img/Courses/Bitcoinprogramming%20IVAN%20ON%20TECH%20.jpg"></div>
+                            <div class="col-lg-7">
+                                <h3>Bitcoin Programming 101</h3>
+                                <div class="info"><span class="text-muted"><a href="#">Ivan On Tech Academy</a></span></div>
+                                <p>You will start by learning about all the different tools you need to interact and build with bitcoin. Then we will look at stacks and stack based programming languages. We will look at how you can script your own, custom
+                                    bitcoin transactions and how you can build timelocks, multisig transaction and much, much more.&nbsp;<br></p><a class="btn btn-outline-primary btn-sm" role="button" href="https://academy.ivanontech.com/bitcoin-programming-track">Read More</a></div>
+                        </div>
+                    </div>
+                    <div class="clean-blog-post">
+                        <div class="row">
+                            <div class="col-lg-5"><img class="rounded img-fluid" src="assets/img/Courses/Ethereum%20101%20IVAN%20ON%20TECH.jpg"></div>
+                            <div class="col-lg-7">
+                                <h3>Ethereum 101</h3>
+                                <div class="info"><span class="text-muted">Ivan On Tech Academy</span></div>
+                                <p>In the new decentralized economy that is emerging, it is crucial to understand how&nbsp;Ethereum works. With this course, you will have the foundation to understand digital currencies, smart contracts and to move on and
+                                    start programming smart contract on this global computer we call Ethereum.<br></p><a class="btn btn-outline-primary btn-sm" role="button" href="https://academy.ivanontech.com/course-curriculum-ethereum-101">Read More</a></div>
+                        </div>
+                    </div>
+                    <div class="clean-blog-post">
+                        <div class="row">
+                            <div class="col-lg-5"><img class="rounded img-fluid" src="assets/img/Courses/DeFi101%20TEST%20FROM%20ACADEMY.jpg"></div>
+                            <div class="col-lg-7">
+                                <h3>DeFi 101</h3>
+                                <div class="info"><span class="text-muted">Ivan On Tech Academy</span></div>
+                                <p>After following this DeFi 101 course you will understand the base fundamental building blocks of DeFi and we will teach you how to Interact, fundamentally understand and verify DeFi protocols so you can navigate, Interact
+                                    and potentially start building in the DeFi ecosystem.</p><a class="btn btn-outline-primary btn-sm" role="button" href="https://academy.ivanontech.com/products/defi-101">Read More</a></div>
+                        </div>
+                    </div>
+                    <div class="clean-blog-post">
+                        <div class="row">
+                            <div class="col-lg-5"><img class="rounded img-fluid" src="assets/img/Courses/Bitcoin%20Attacks.jpg"></div>
+                            <div class="col-lg-7">
+                                <h3>Bitcoin Attacks</h3>
+                                <div class="info"><span class="text-muted">Ivan On Tech Academy<a href="#"></a></span></div>
+                                <p>This course will teach you all about the different attack vectors that the Bitcoin Network might be vulnerable to. You will learn both how an attacker might potentially execute an attack, how the network protects against
+                                    the attack and what the probability of someone executing the different attacks is.</p><a class="btn btn-outline-primary btn-sm" role="button" href="https://academy.ivanontech.com/course-curriculum-bitcoin-attacks">Read More</a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer id="footer-main" class="page-footer dark">
+        <div class="container" id="footer-links">
+            <div class="row">
+                <div class="col-sm-3">
+                    <h5>Get started</h5>
+                    <ul>
+                        <li><a href="homepage.html">Home</a></li>
+                        <li><a href="registration.html">Sign up</a></li>
+                        <li><a href="#">Not in use</a></li>
+                    </ul>
+                </div>
+                <div class="col-sm-3">
+                    <h5>About us</h5>
+                    <ul>
+                        <li><a href="#">Company Information/Not in use</a></li>
+                        <li><a href="#">Contact us/Not in use</a>/</li>
+                        <li><a href="#">Reviews/Not in use</a></li>
+                    </ul>
+                </div>
+                <div class="col-sm-3">
+                    <h5>Support</h5>
+                    <ul>
+                        <li><a href="#">FAQ/Not in use</a></li>
+                        <li><a href="#">Help desk/Not in use</a></li>
+                        <li><a href="#">Forums/Not in use</a></li>
+                    </ul>
+                </div>
+                <div class="col-sm-3">
+                    <h5>Legal</h5>
+                    <ul>
+                        <li><a href="#">Terms of Service/ Not in use</a></li>
+                        <li><a href="#">Terms of Use/Not in use</a></li>
+                        <li><a href="#">Privacy Policy/Not in use</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-copyright">
+            <p id="copyright">© 2020 Copyright Alef</p>
+        </div>
+    </footer>
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/bs-init.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.js"></script>
+    <script src="assets/js/smoothproducts.min.js"></script>
+    <script src="assets/js/theme.js"></script>
+</body>
+
+</html>
