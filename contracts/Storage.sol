@@ -24,6 +24,7 @@ abstract contract CEth {
   function transferFrom(address src, address dst, uint wad)virtual external returns (bool);
   function redeem(uint redeemTokens) virtual external returns (uint);
   function exchangeRateCurrent() virtual external returns (uint);
+  function approve(address, uint)virtual external returns (bool);
 }
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
@@ -37,163 +38,196 @@ import "./Safe/Pausable.sol";
 
 contract Storage is Ownable, Pausable {
 
+  using SafeMath for uint256;
 
   address internal daiContractAddress; // Contains Dai SmartContract address || 0x6B175474E89094C44Da98b954EedeAC495271d0F ||
   address internal cDaiContractAddress; // Contains cDai SmartContract address || 0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643 ||
   address internal cEthContractAddress; // Contains eEth SmartContract address || 0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5 ||
 
 
-  uint256 public contractEtherBalance; // Total amount of Ether in contract
-  uint256 public contractDaiBalance; // Total amount of Dai in contract
-  uint256 public contractCethBalance; // Total amount of cEther in contract
-  uint256 public contractCdaiBalance; // Total amount of cDai in contract
+  uint256 internal contractEtherBalance; // Total amount of Ether in contract
+  uint256 internal contractDaiBalance; // Total amount of Dai in contract
+  uint256 internal contractCethBalance; // Total amount of cEther in contract
+  uint256 internal contractCdaiBalance; // Total amount of cDai in contract
 
 
-  bool public initialized;
+   uint256 public uniqueOfferId; // global offers counter
 
-  // require sponsor
-  modifier isSponsor() {
-    require (sponsors[msg.sender].status == true);
-    _;
+  //INTEREST EVENTS//
+  event newInterest (address _interestOwner, uint256 _uniqueOfferId);
+  event interestDeleted (address _interestOwner, uint256 _uniqueOfferId);
+
+  //PROVIDER EVENTS//
+  event newProvider (address _provider); // emit 'new provider' address
+  event newCommittment (address _provider, uint256 offersCounter); // emits address provider and the global offer id
+  event purchase (bytes32 hashCheck,address _supplier, uint256 _offerId);
+  event sponsorshipDeleted (address _provider, uint256 _providerSponsorshipCounter);
+  event interestEnabled (bytes32 _hashCheck); //emit addr beneficiary and global offer id
+
+  //SUPPLIER EVENTS//
+  event newSupplier (address _supplier); // emit 'new supplier' address
+  event newOffer (address _supplier, uint256 _id); // emit the id of the offer just created
+  event offerChange (uint256 _offerId); // emit offer id of 'offer' changed
+
+
+
+  //MICROFEE FOR SUPPLIER AND INTEREST
+  modifier fee {
+      require (msg.value >= 100 szabo, 'missing fee');
+      _;
   }
 
 
-  //@Dev-> multiple balances hold different tokens - be mindiful when coding
-  //Status: if sponsor is active == true
+  modifier isSupplier {
+      require (suppliers[msg.sender].status == true, "not an active supplier");
+      _;
+  }
 
-  struct Sponsor {
-    // true if sponsor
+
+  modifier isProvider {
+      require (providers[msg.sender].status == true, "msg.sender is not an active provider");
+      _;
+  }
+
+
+  struct Supplier {
+      bool status;
+      uint256 supplierOffersCounter; // this id is used internally, never decreases
+      uint256 daiAmount;
+      uint256 cDaiAmount;
+      uint256 etherAmount;
+      uint256 cEtherAmount;
+      mapping (uint256 => Offers) offers;
+  }
+
+  mapping (address => Supplier) public suppliers;
+
+  struct Offers {
+
+      bool status;
+      uint256 offerId; // this id is the global one
+      uint256 price; // I am going to use dai for now, we can change it later
+  }
+
+
+
+  struct Provider {
+    // true if provider
     bool status;
-    // sponsor ether balance
+    // provider ether balance
     uint256 etherBalance;
-    // sponsor cEth balance
+    // provider cEth balance
     uint256 cEtherBalance;
-    // sponsor Dai balance
+    // provider Dai balance
     uint256 daiBalance;
-    // sponsor cDai balance
+    // provider cDai balance
     uint256 cDaiBalance;
-    // goal is the amount sponsor needs to reach to pay the selected course
-    uint256 goal;
-    // the id of the course the sponsor wants to pay
-    bytes32 courseId;
+  }
+
+  mapping (address => Provider) public providers;
+
+
+
+  struct Interests {
+    address provider; // when a provider pays for this interest, the provider address is set and the user entitled to use the service
+
+    address interestOwner; // the one who registered the interest
+    uint256 interestId;  // this id is the global one
+  }
+
+  mapping (bytes32 => Interests) public interest; // an user can subscribe to more offers because it mapped with user HASHING address + uniqueOfferId
+
+
+
+
+
+
+
+
+  // GETTER METHODS - PROVIDER STRUCT
+
+  function getProviderEtherBalance (address _provider) public view returns (uint256) {
+      //@-> return Ether balance in provider struct
+      return providers[_provider].etherBalance;
+  }
+
+  function getProviderCetherBalance (address _provider) public view returns (uint256) {
+      //@-> return cEther balance in provider struct
+      return providers[_provider].cEtherBalance;
+  }
+
+  function getProviderDaiBalance (address _provider) public view returns (uint256) {
+      //@-> return Dai balance in provider struct
+      return providers[_provider].daiBalance;
+  }
+
+  function getProviderCdaiBalance(address _provider) public view returns (uint256) {
+      //@-> return cDai balance in provider struct
+      return providers[_provider].cDaiBalance;
+  }
+
+  function getProviderStatus (address _provider) public view returns (bool) {
+      //@-> return status in provider struct
+      return providers[_provider].status;
+  }
+
+  //GETTER METHODS SUPPLIER STRUCT
+
+  function getSupplierInfos (address _supplier ) public view returns (bool status,
+                                                                      uint256 supplierOffersCounter,
+                                                                      uint256 daiAmount,
+                                                                      uint256 cDaiAmount,
+                                                                      uint256 etherAmount,
+                                                                      uint256 cEtherAmount) {
+    return (suppliers[_supplier].status,
+            suppliers[_supplier].supplierOffersCounter,
+            suppliers[_supplier].daiAmount,
+            suppliers[_supplier].cDaiAmount,
+            suppliers[_supplier].etherAmount,
+            suppliers[_supplier].cEtherAmount
+           );
+  }
+
+  function getOfferBySupplier (address _supplier, uint256 _supplierOffersCounter) public view returns (bool,uint256) {
+    // return offer details of a given _supplier
+
+    // @-> Dev uint256 supplierOffersCounter tells how many projects have been offered by this _supplier
+
+    // _supplierOffersCounter id MUST be the internal id in struct Supplier
+
+    return (
+        suppliers[_supplier].offers[_supplierOffersCounter].status,
+        suppliers[_supplier].offers[_supplierOffersCounter].price
+        );
+  }
+
+
+  function getSupplierOffersCounter (address _supplier) public view returns (uint256) {
+
+    // returns the total amount of offers created.
+    return ( suppliers[_supplier].supplierOffersCounter);
 
   }
 
 
-  //@Dev-> student balance mult not change until a funding is completed
-  //Status: if student is active == true
-
-  struct Student {
-    bool status;
-    uint256 balance;
-  }
+  function getOfferStatus (address _supplier, uint256 _supplierOffersCounter) public view returns (bool) {
 
 
-  // address owner the one who registers the course
-  // unique id bytes32
-  // Status: if course is active == true
-
-  struct Course {
-    //course owner
-    address courseOwner;
-    //Price of the course
-    uint256 price;
-    // true if active
-    bool courseState;
-
-    uint64 id;
-  }
-
-  // mapping sponsors => address
-  mapping (address => Sponsor) internal sponsors;
-
-  // mapping students => address
-  mapping (address => Student) internal students;
-
-  // mapping courses => bytes32
-  mapping (bytes32 => Course) internal courses;
+      // @-> Dev uint256 providerOffersCounter tells how many projects have been offered by this _supplier
+      // offer id MUST be the internal id in struct Supplier
 
 
-  // Declare events for actions we may want to watch
-  event SponsorAction(address indexed sponsor, bytes32 action);
-  event NewDeposit(address indexed sponsor, uint256 amt);
-  event SponsorWithdrawal(address indexed sponsor, uint256 amt);
-  event OwnerChanged(address indexed owner, address indexed newOwner);
-  event academyWithdrawal(address indexed academy, uint256 amt);
-  event CourseCreated(address indexed academy, uint256 indexed course, uint256 indexed price);
-  event CourseRemoved(address indexed academy, uint256 indexed course, bytes32 action);
-  event ScholarshipCreated(uint256 indexed studentID, address indexed academy, uint256 indexed course);
-  event AcademyAction(address indexed academy, bytes32 action);
-  event CourseCreated (bytes32 courseId);
-
-
-  // GETTER METHODS - SPONSOR STRUCT
-
-  function getSponsorEtherBalance (address _address) public view returns (uint256) {
-    //@-> return Ether balance in sponsor struct
-    return sponsors[_address].etherBalance;
-  }
-
-  function getSponsorCetherBalance (address _address) public view returns (uint256) {
-    //@-> return cEther balance in sponsor struct
-    return sponsors[_address].cEtherBalance;
-  }
-
-  function getSponsorDaiBalance (address _address) public view returns (uint256) {
-    //@-> return Dai balance in sponsor struct
-    return sponsors[_address].daiBalance;
-  }
-
-  function getSponsorCdaiBalance(address _address) public view returns (uint256) {
-    //@-> return cDai balance in sponsor struct
-    return sponsors[_address].cDaiBalance;
-  }
-
-  function getSponsorStatus (address _address) public view returns (bool) {
-    //@-> return status in sponsor struct
-    return sponsors[_address].status;
+      return (suppliers[_supplier].offers[_supplierOffersCounter].status);
   }
 
 
 
-  // GETTER METHODS - STUDENT STRUCT
-
-  function getStudentBalance(address _academy) public view returns (uint256) {
-    //@-> return Ether balance in academy struct
-    return students[_academy].balance;
-  }
-
-  function getStudentStatus(address _academy) public view returns (bool) {
-    //@-> return status in academy struct
-    return students[_academy].status;
-  }
-
-
-
-
-  // GETTER METHODS - COURSE STRUCT
-
-  function getCourseOwner (bytes32 _courseId) public view returns (address) {
-    //@-> return owner in course struct
-    return courses[_courseId].courseOwner;
-  }
-
-  function getCoursePrice (bytes32 _courseId) public view returns (uint256) {
-    //@-> return owner in course struct
-    return courses[_courseId].price;
-  }
-
-  function getCourseState (bytes32 _courseId) public view returns (bool) {
-    //@-> return owner in course struct
-    return courses[_courseId].courseState;
-  }
 
 
 
   //@-> Dev   those are the setters for compound and erc20 token addresses
   //@-> Notice! contract must be paused to allow setting a new address
   //            onlyOwner restricted
-
 
   function setDAIcontractAddress (address _newDAIaddress) public onlyOwner whenPaused returns (address){
     daiContractAddress = _newDAIaddress;
@@ -209,4 +243,6 @@ contract Storage is Ownable, Pausable {
     cEthContractAddress = _newCETHaddress;
     return cEthContractAddress;
   }
+
+
 }
