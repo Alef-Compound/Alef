@@ -8,7 +8,7 @@ contract Alef is Storage {
 
 
   using SafeMath for uint256;
-
+  bool public initialized;
 
   constructor (address _daiContractAddress, address _cDaiContractAddress, address _cEthContractAddress) public {
     // verify parameters
@@ -19,6 +19,7 @@ contract Alef is Storage {
     daiContractAddress = _daiContractAddress;
     cDaiContractAddress = _cDaiContractAddress;
     cEthContractAddress = _cEthContractAddress;
+    initialized = true;
   }
 
 
