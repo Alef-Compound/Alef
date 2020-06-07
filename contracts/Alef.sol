@@ -12,9 +12,9 @@ contract Alef is Storage {
 
   constructor (address _daiContractAddress, address _cDaiContractAddress, address _cEthContractAddress) public {
     // verify parameters
-    require(Erc20(_daiContractAddress).approve(address(this), 0),"dai contract did not answer");
-    require(CErc20(_cDaiContractAddress).approve(address(this), 0),"cDai contract did not answer");
-    require(CEth(_cEthContractAddress).approve(address(this), 0),"cEth contract did not answer");
+    // require(Erc20(_daiContractAddress).approve(address(this), 0),"dai contract did not answer");
+    // require(CErc20(_cDaiContractAddress).approve(address(this), 0),"cDai contract did not answer");
+    // require(CEth(_cEthContractAddress).approve(address(this), 0),"cEth contract did not answer");
 
     daiContractAddress = _daiContractAddress;
     cDaiContractAddress = _cDaiContractAddress;
@@ -42,8 +42,8 @@ contract Alef is Storage {
 
   function setSupplier (address _supplier) public onlyOwner {
 
-    require (supplier[_supplier].status == false, "is already supplier");
-    supplier[_supplier].status = true;
+    require (suppliers[_supplier].status == false, "is already supplier");
+    suppliers[_supplier].status = true;
     emit newSupplier(_supplier);
   }
 
@@ -55,14 +55,14 @@ contract Alef is Storage {
     // 2- the global offer id which is gonna be set in the offer itself
 
 
-    supplier[msg.sender].offers[supplier[msg.sender].supplierOffersCounter].status = true;
-    supplier[msg.sender].offers[supplier[msg.sender].supplierOffersCounter].offerId = uniqueOfferId; // we have saved the unique global id for this offer.
-    supplier[msg.sender].offers[supplier[msg.sender].supplierOffersCounter].price = _price;
+    suppliers[msg.sender].offers[suppliers[msg.sender].supplierOffersCounter].status = true;
+    suppliers[msg.sender].offers[suppliers[msg.sender].supplierOffersCounter].offerId = uniqueOfferId; // we have saved the unique global id for this offer.
+    suppliers[msg.sender].offers[suppliers[msg.sender].supplierOffersCounter].price = _price;
 
-    supplier[msg.sender].supplierOffersCounter = supplier[msg.sender].supplierOffersCounter.add(1); // Increase id in offer struct
+    suppliers[msg.sender].supplierOffersCounter = suppliers[msg.sender].supplierOffersCounter.add(1); // Increase id in offer struct
     uniqueOfferId = uniqueOfferId.add(1); // Increase global id counter
 
-    emit newOffer(msg.sender,supplier[msg.sender].offers[uniqueOfferId].offerId);
+    emit newOffer(msg.sender, suppliers[msg.sender].offers[uniqueOfferId].offerId);
   }
 
 
@@ -71,8 +71,8 @@ contract Alef is Storage {
       // set offer [id] status to false
       // _supplierOffersCounter must be the internal counter of struct Supplier
 
-      require (supplier[msg.sender].offers[_supplierOffersCounter].status == true,'no such offer');
-      supplier[msg.sender].offers[_supplierOffersCounter].status = false;
+      require (suppliers[msg.sender].offers[_supplierOffersCounter].status == true,'no such offer');
+      suppliers[msg.sender].offers[_supplierOffersCounter].status = false;
       emit offerChange (_supplierOffersCounter);
   }
 
@@ -82,8 +82,8 @@ contract Alef is Storage {
       // set offer [id] status to true
       // _supplierOffersCounter must be the internal counter of struct Supplier
 
-      require (supplier[msg.sender].offers[_supplierOffersCounter].status == true,'no such offer');
-      supplier[msg.sender].offers[_supplierOffersCounter].status = true;
+      require (suppliers[msg.sender].offers[_supplierOffersCounter].status == true,'no such offer');
+      suppliers[msg.sender].offers[_supplierOffersCounter].status = true;
       emit offerChange (_supplierOffersCounter);
   }
 
@@ -94,8 +94,8 @@ contract Alef is Storage {
       // _supplierOffersCounter must be the internal counter of struct Supplier
 
 
-      require (supplier[msg.sender].offers[_supplierOffersCounter].status == true,'no such offer');
-      supplier[msg.sender].offers[_supplierOffersCounter].price = _price;
+      require (suppliers[msg.sender].offers[_supplierOffersCounter].status == true,'no such offer');
+      suppliers[msg.sender].offers[_supplierOffersCounter].price = _price;
       emit offerChange (_supplierOffersCounter);
   }
 
@@ -108,7 +108,7 @@ contract Alef is Storage {
       uint8 i;
 
       for (i=0;i<totalOffers;i++){
-          result[i] = supplier[_supplier].offers[i].offerId;
+          result[i] = suppliers[_supplier].offers[i].offerId;
       }
 
       return result;
@@ -167,8 +167,8 @@ contract Alef is Storage {
    */
 
    function setProvider (address _provider) public onlyOwner {
-     require (provider[_provider].status == false, "is already provider");
-     provider[_provider].status = true;
+     require (providers[_provider].status == false, "is already provider");
+     providers[_provider].status = true;
      emit newProvider(_provider);
    }
 
@@ -178,19 +178,19 @@ contract Alef is Storage {
     // _supplierOffersCounter MUST be the supplierOffersCounter variable in Supplier struct
 
 
-    require (supplier[_supplier].offers[_supplierOffersCounter].status == true, 'offer id not valid'); // must be an active offer
+    require (suppliers[_supplier].offers[_supplierOffersCounter].status == true, 'offer id not valid'); // must be an active offer
 
-    require (provider[msg.sender].daiBalance >= supplier[_supplier].offers[_supplierOffersCounter].price, 'insufficient balance'); // dai balance of provider > price
+    require (providers[msg.sender].daiBalance >= suppliers[_supplier].offers[_supplierOffersCounter].price, 'insufficient balance'); // dai balance of provider > price
 
     // decreasing dai balance from PROVIDER
 
-    provider[msg.sender].daiBalance = provider[msg.sender].daiBalance.sub(supplier[_supplier].offers[_supplierOffersCounter].price);
+    providers[msg.sender].daiBalance = providers[msg.sender].daiBalance.sub(suppliers[_supplier].offers[_supplierOffersCounter].price);
 
     // increasing dai balance of SUPPLIER
 
-    supplier[_supplier].daiAmount = supplier[_supplier].daiAmount.add(supplier[_supplier].offers[_supplierOffersCounter].price);
+    suppliers[_supplier].daiAmount = suppliers[_supplier].daiAmount.add(suppliers[_supplier].offers[_supplierOffersCounter].price);
 
-    bytes32 hashCheck = activateInterest (_beneficiary, supplier[_supplier].offers[_supplierOffersCounter].offerId);
+    bytes32 hashCheck = activateInterest (_beneficiary, suppliers[_supplier].offers[_supplierOffersCounter].offerId);
 
     require (hashCheck[0] != 0); // must not be empty hash
 

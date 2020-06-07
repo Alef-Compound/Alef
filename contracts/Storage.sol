@@ -79,13 +79,13 @@ contract Storage is Ownable, Pausable {
 
 
   modifier isSupplier {
-      require (supplier[msg.sender].status == true, "not an active supplier");
+      require (suppliers[msg.sender].status == true, "not an active supplier");
       _;
   }
 
 
   modifier isProvider {
-      require (provider[msg.sender].status == true, "msg.sender is not an active provider");
+      require (providers[msg.sender].status == true, "msg.sender is not an active provider");
       _;
   }
 
@@ -100,7 +100,7 @@ contract Storage is Ownable, Pausable {
       mapping (uint256 => Offers) offers;
   }
 
-  mapping (address => Supplier) public supplier;
+  mapping (address => Supplier) public suppliers;
 
   struct Offers {
 
@@ -124,7 +124,7 @@ contract Storage is Ownable, Pausable {
     uint256 cDaiBalance;
   }
 
-  mapping (address => Provider) public provider;
+  mapping (address => Provider) public providers;
 
 
 
@@ -148,34 +148,45 @@ contract Storage is Ownable, Pausable {
 
   function getProviderEtherBalance (address _provider) public view returns (uint256) {
       //@-> return Ether balance in provider struct
-      return provider[_provider].etherBalance;
+      return providers[_provider].etherBalance;
   }
 
   function getProviderCetherBalance (address _provider) public view returns (uint256) {
       //@-> return cEther balance in provider struct
-      return provider[_provider].cEtherBalance;
+      return providers[_provider].cEtherBalance;
   }
 
   function getProviderDaiBalance (address _provider) public view returns (uint256) {
       //@-> return Dai balance in provider struct
-      return provider[_provider].daiBalance;
+      return providers[_provider].daiBalance;
   }
 
   function getProviderCdaiBalance(address _provider) public view returns (uint256) {
       //@-> return cDai balance in provider struct
-      return provider[_provider].cDaiBalance;
+      return providers[_provider].cDaiBalance;
   }
 
   function getProviderStatus (address _provider) public view returns (bool) {
       //@-> return status in provider struct
-      return provider[_provider].status;
+      return providers[_provider].status;
   }
 
-
-
-
-
   //GETTER METHODS SUPPLIER STRUCT
+
+  function getSupplierInfos (address _supplier ) public view returns (bool status,
+                                                                      uint256 supplierOffersCounter,
+                                                                      uint256 daiAmount,
+                                                                      uint256 cDaiAmount,
+                                                                      uint256 etherAmount,
+                                                                      uint256 cEtherAmount) {
+    return (suppliers[_supplier].status,
+            suppliers[_supplier].supplierOffersCounter,
+            suppliers[_supplier].daiAmount,
+            suppliers[_supplier].cDaiAmount,
+            suppliers[_supplier].etherAmount,
+            suppliers[_supplier].cEtherAmount
+           );
+  }
 
   function getOfferBySupplier (address _supplier, uint256 _supplierOffersCounter) public view returns (bool,uint256) {
     // return offer details of a given _supplier
@@ -185,8 +196,8 @@ contract Storage is Ownable, Pausable {
     // _supplierOffersCounter id MUST be the internal id in struct Supplier
 
     return (
-        supplier[_supplier].offers[_supplierOffersCounter].status,
-        supplier[_supplier].offers[_supplierOffersCounter].price
+        suppliers[_supplier].offers[_supplierOffersCounter].status,
+        suppliers[_supplier].offers[_supplierOffersCounter].price
         );
   }
 
@@ -194,7 +205,7 @@ contract Storage is Ownable, Pausable {
   function getSupplierOffersCounter (address _supplier) public view returns (uint256) {
 
     // returns the total amount of offers created.
-    return ( supplier[_supplier].supplierOffersCounter);
+    return ( suppliers[_supplier].supplierOffersCounter);
 
   }
 
@@ -206,7 +217,7 @@ contract Storage is Ownable, Pausable {
       // offer id MUST be the internal id in struct Supplier
 
 
-      return (supplier[_supplier].offers[_supplierOffersCounter].status);
+      return (suppliers[_supplier].offers[_supplierOffersCounter].status);
   }
 
 
