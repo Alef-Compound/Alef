@@ -1,11 +1,21 @@
 import React, { Component } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
+import AlefContract from "./contracts/Alef.json";
 import getWeb3 from "./getWeb3";
 
 import "./App.css";
 
 class App extends Component {
-  state = { storageValue: 0, web3: null, accounts: null, contract: null };
+  state = { supplierInfos: {
+                            status: false,
+                            supplierOffersCounter: 0,
+                            daiAmount: 0,
+                            cDaiAMount: 0,
+                            etherAmount: 0,
+                            cEtherAmount: 0
+                          },
+            web3: null,
+            accounts: null,
+            contract: null };
 
   componentDidMount = async () => {
     try {
@@ -17,15 +27,15 @@ class App extends Component {
 
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = SimpleStorageContract.networks[networkId];
+      const deployedNetwork = AlefContract.networks[networkId];
       const instance = new web3.eth.Contract(
-        SimpleStorageContract.abi,
+        AlefContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.runExample);
+      this.setState({ web3, accounts, contract: instance }, this.getSupplierInfos);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -35,18 +45,45 @@ class App extends Component {
     }
   };
 
-  runExample = async () => {
+  getSupplierInfos = async () => {
     const { accounts, contract } = this.state;
 
-    // Stores a given value, 5 by default.
-    await contract.methods.set(5).send({ from: accounts[0] });
+    // // Stores a given value, 5 by default.
+//    await contract.methods.setSupplier(accounts[0]).send({ from: accounts[0] });
 
     // Get the value from the contract to prove it worked.
-    const response = await contract.methods.get().call();
+    let response;
+    try{
+       response = await contract.methods.getSupplierInfos(accounts[0]).call();
+      console.log(response);
 
-    // Update state with the result.
-    this.setState({ storageValue: response });
+      // Update state with the result.
+      var supplierInfos = {...this.state.supplierInfos};
+      supplierInfos.status = response.status;
+      supplierInfos.supplierOffersCounter = response.supplierOffersCounter;
+      supplierInfos.daiAmount = response.daiAmount;
+      supplierInfos.cDaiAmount = response.cDaiAmount;
+      supplierInfos.etherAmount = response.etherAmount;
+      supplierInfos.cEtherAmount = response.cEtherAmount;
+      this.setState({supplierInfos})
+    } catch(err){
+      console.log(err);
+      console.log(response);
+    }
+
   };
+
+  setSupplierClick = async () => {
+    const { accounts, contract } = this.state;
+    try{
+      let res = await contract.methods.setSupplier(accounts[0]).send({ from: accounts[0] });
+      this.getSupplierInfos();
+      console.log(res);
+    } catch (err){
+      console.log(err);
+    }
+  }
+
 
   render() {
     if (!this.state.web3) {
@@ -55,16 +92,22 @@ class App extends Component {
     return (
       <div className="App">
         <h1>Good to Go!</h1>
-        <p>Your Truffle Box is installed and ready.</p>
-        <h2>Smart Contract Example</h2>
+        <h2>Alef Example</h2>
         <p>
-          If your contracts compiled and migrated successfully, below will show
-          a stored value of 5 (by default).
+          Let set a new supplier with our current address.
         </p>
+        <button onClick={this.setSupplierClick}>
+          Set supplier
+        </button>
         <p>
-          Try changing the value stored on <strong>line 40</strong> of App.js.
+          This is the value of you current supplier variable.
         </p>
-        <div>The stored value is: {this.state.storageValue}</div>
+        <div>The status value is: {this.state.supplierInfos.status.toString()}</div>
+        <div>The supplierOffersCounter value is: {this.state.supplierInfos.supplierOffersCounter}</div>
+        <div>The daiAmount value is: {this.state.supplierInfos.daiAmount}</div>
+        <div>The cDaiAmount value is: {this.state.supplierInfos.cDaiAmount}</div>
+        <div>The etherAmount value is: {this.state.supplierInfos.etherAmount}</div>
+        <div>The cEtherAmount value is: {this.state.supplierInfos.cEtherAmount}</div>
       </div>
     );
   }

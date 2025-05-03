@@ -1,11 +1,40 @@
+const constants = require('../config/constants');
+
 var Alef = artifacts.require("./Alef.sol");
 
 module.exports = (deployer) => deployer
                 .then( () => deployMainContract(deployer));
 
-function deployMainContract(deployer){
+function deployMainContract(deployer, network){
+
+  let dai = "0x0";
+  let cdai = "0x0";
+  let ceth = "0x0";
+  /*
+  *   network is the parameter passed to truffle
+  *   ex: truffle develop --network ropsten
+  *
+  *   deployer.network is the network used internaly
+  *   by truffle
+  */
+  let activeNetwork = network || deployer.network;
+
+  if (activeNetwork === "develop"){
+    dai = constants.DAI_ROPSTEN;
+    cdai = constants.CDAI_ROPSTEN;
+    ceth = constants.CETH_ROPSTEN;
+  } else if (activeNetwork === "ropsten"){
+    dai = constants.DAI_ROPSTEN;
+    cdai = constants.CDAI_ROPSTEN;
+    ceth = constants.CETH_ROPSTEN;
+  } else if (activeNetwork === "live") {
+    dai = constants.DAI_MAINNET;
+    cdai = constants.CDAI_MAINNET;
+    ceth = constants.CETH_MAINNET;
+  }
   return deployer.deploy(Alef, 
-                         "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-                         "0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643",
-                         "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5");
+                         dai, //dai
+                         cdai,
+                         ceth);
 }
+
